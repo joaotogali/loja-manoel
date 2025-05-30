@@ -1,0 +1,40 @@
+﻿services:
+  lojadomanoelapi:
+    image: ${DOCKER_REGISTRY-}lojadomanoelapi:net8
+    build:
+      context: .
+      dockerfile: LojadoManoelAPI/Dockerfile
+    ports:
+      - "8080:80"  
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - SA_PASSWORD=${SA_PASSWORD}
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Developer
+    ports:
+      - "14331:1433"  
+    volumes:
+      - sql_data:/var/opt/mssql 
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$SA_PASSWORD\" -b || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+
+volumes:
+  sql_data:  
