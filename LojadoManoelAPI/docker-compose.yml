@@ -1,19 +1,19 @@
-﻿services:
+﻿
+services:
   lojadomanoelapi:
-    image: ${DOCKER_REGISTRY-}lojadomanoelapi:net8
     build:
       context: .
       dockerfile: LojadoManoelAPI/Dockerfile
     ports:
-      - "8080:80"  
+      - "8080:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION}
+      - ConnectionStrings__DefaultConnection=Server=db;Database=LojaManoel;User Id=sa;Password=Jot@704276;TrustServerCertificate=true;MultipleActiveResultSets=true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -21,20 +21,20 @@
   db:
     image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      - SA_PASSWORD=${SA_PASSWORD}
+      - SA_PASSWORD=Jot@704276
       - ACCEPT_EULA=Y
       - MSSQL_PID=Developer
+      - MSSQL_DATABASE=LojaManoel
     ports:
-      - "14331:1433"  
+      - "14331:1433"
     volumes:
-      - sql_data:/var/opt/mssql 
+      - sql_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$SA_PASSWORD\" -b || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$SA_PASSWORD\" -Q \"SELECT 1\" -d LojaManoel || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 120s
-
+      start_period: 30s
 
 volumes:
-  sql_data:  
+  sql_data:

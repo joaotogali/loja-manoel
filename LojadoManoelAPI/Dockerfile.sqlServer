@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/mssql/server:2019-latest
+
+# Variáveis de ambiente
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=$SA_PASSWORD
+ENV MSSQL_PID=Developer
+
+# Copia script de inicialização
+COPY init-db.sh /usr/src/app/
+RUN chmod +x /usr/src/app/init-db.sh
+
+# Porta padrão do SQL Server
+EXPOSE 1433
+
+# Comando de inicialização
+CMD ["/bin/bash", "-c", "/usr/src/app/init-db.sh & /opt/mssql/bin/sqlservr"]

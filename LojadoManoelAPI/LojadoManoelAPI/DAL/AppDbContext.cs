@@ -9,7 +9,6 @@ namespace LojadoManoelAPI.DAL
 
         public DbSet<Pedido> PedidosDb { get; set; }
         public DbSet<Produto> ProdutosDb { get; set; }
-        public DbSet<Dimensoes> DimensoesDb { get; set; }
 
         //Configurações do modelo e relacionamentos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -18,6 +17,11 @@ namespace LojadoManoelAPI.DAL
 
             //Configurando Dimensoes como propriedade complexa dentro de produto
             modelBuilder.Entity<Produto>().OwnsOne(p => p.Dimensoes);
+
+            modelBuilder.Entity<Produto>()
+                .HasOne(p => p.Pedido)
+                .WithMany(p => p.Produtos)
+                .HasForeignKey(p => p.PedidoId);
         }
     }
 }
